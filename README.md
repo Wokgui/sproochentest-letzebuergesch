@@ -1,24 +1,27 @@
-# Sproochentest Lëtzebuergesch V19
+# Sproochentest Lëtzebuergesch V19.1
 
 Refonte pédagogique destinée à une personne qui part de zéro.
 
-## Principes V19
+## Principes
 
 - interface claire et beaucoup moins chargée ;
 - un seul parcours principal avec bouton « Continuer » ;
 - leçons déverrouillées progressivement ;
 - vocabulaire très limité au départ, puis phrases, dialogues et compréhension ;
 - seuil de 70 % pour débloquer la leçon suivante ;
-- synthèse vocale robotisée supprimée ;
-- emplacement prévu uniquement pour des audios humains vérifiés ;
-- module RTL Journal verrouillé jusqu'à acquisition des bases ;
-- architecture prévue pour de futurs exercices créés à partir de transcriptions authentiques ;
-- progression V19 stockée séparément dans le navigateur afin de permettre un vrai départ à zéro.
+- aucune synthèse vocale : les boutons audio ne doivent jouer que des enregistrements humains luxembourgeois vérifiés ;
+- recherche automatique de fichiers de prononciation libres sur Wikimedia Commons ;
+- module Journal verrouillé jusqu'à acquisition des bases ;
+- endpoint serveur prévu pour générer 3 à 5 questions à partir d'une transcription luxembourgeoise, avec difficulté adaptée au niveau.
+
+## Sources audio
+
+La V19.1 privilégie les fichiers de prononciation luxembourgeoise de Wikimedia Commons, notamment ceux issus du Lëtzebuerger Online Dictionnaire et de Lingua Libre. Aucun son synthétique n'est utilisé comme secours.
+
+## Questions automatiques
+
+Le endpoint `/api/generate-questions` utilise la Responses API d'OpenAI uniquement côté serveur. Il nécessite une variable d'environnement `OPENAI_API_KEY` sur Vercel. La transcription peut provenir d'un contenu autorisé ou être fournie manuellement ; l'application ne copie ni n'héberge automatiquement les vidéos RTL.
 
 ## PWA
 
-Le manifeste utilise désormais un thème clair et le service worker V19 force le renouvellement de l'ancien cache V18.
-
-## Étape suivante
-
-Ajouter des enregistrements humains de mots isolés issus d'une source autorisée, puis connecter un petit backend pour transformer des transcriptions d'extraits authentiques en questions adaptées au niveau de l'apprenant.
+Les données d'apprentissage restent dans le stockage local du navigateur.
