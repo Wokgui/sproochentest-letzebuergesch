@@ -1,6 +1,7 @@
 // V19.2 — correctifs chargés après l'application principale
 (function(){
   const localAudioCache = {};
+  let fixedAudioPlayer = null;
   const n = s => String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^file:/,'').replace(/\.(ogg|oga|mp3|wav|webm)$/,'').replace(/[^a-z0-9]/g,'');
   const clean = s => String(s||'').replace(/[.…?!,:;]/g,'').trim();
 
@@ -29,7 +30,7 @@
     if(Object.prototype.hasOwnProperty.call(localAudioCache,word))return localAudioCache[word];
     try{
       let url=null;
-      if(typeof window.commonsExact==='function') url=await window.commonsExact(word).catch(()=>null);
+      if(typeof commonsExact==='function') url=await commonsExact(word).catch(()=>null);
       if(!url) url=await queryCommons(word,`intitle:${word} incategory:"Luxembourgish pronunciation"`);
       if(!url) url=await queryCommons(word,`"${word}" incategory:"Luxembourgish pronunciation"`);
       if(!url) url=await queryCommons(word,`"${word}" incategory:"Lingua Libre pronunciation-ltz"`);
@@ -46,7 +47,7 @@
     const original=btn.textContent;
     const cleaned=clean(word);
     if(cleaned.includes(' ')){
-      status.textContent='Audio mot isolé uniquement : cette ligne est une phrase.';
+      if(status)status.textContent='Audio mot isolé uniquement : cette ligne est une phrase.';
       return;
     }
     btn.disabled=true; btn.textContent='⏳ Recherche…';
@@ -58,14 +59,14 @@
       return;
     }
     try{
-      if(window.audioPlayer){window.audioPlayer.pause();window.audioPlayer.currentTime=0;}
-      window.audioPlayer=new Audio(url);
-      window.audioPlayer.preload='auto';
-      window.audioPlayer.onerror=()=>{if(status)status.textContent='Le fichier audio existe mais sa lecture a échoué.'};
-      await window.audioPlayer.play();
+      if(fixedAudioPlayer){fixedAudioPlayer.pause();fixedAudioPlayer.currentTime=0;}
+      fixedAudioPlayer=new Audio(url);
+      fixedAudioPlayer.preload='auto';
+      fixedAudioPlayer.onerror=()=>{if(status)status.textContent='Le fichier audio existe mais sa lecture a échoué.'};
+      await fixedAudioPlayer.play();
       btn.textContent='🔊 Lecture…';
       if(status)status.textContent='Prononciation humaine · Wikimedia/LOD/Lingua Libre';
-      window.audioPlayer.onended=()=>{btn.textContent=original;if(status)status.textContent='Prononciation humaine disponible';};
+      fixedAudioPlayer.onended=()=>{btn.textContent=original;if(status)status.textContent='Prononciation humaine disponible';};
     }catch(e){
       btn.textContent=original;
       if(status)status.textContent='Lecture bloquée par le navigateur. Réappuie sur Écouter.';
@@ -73,36 +74,19 @@
   };
 
   const bank=[
-    {
-      title:'Comprendre une information simple', level:7,
-      note:'Exercice préparatoire créé pour l’application — pas un extrait RTL.',
-      transcript:"Haut ass d'Wieder zu Lëtzebuerg meeschtens sonneg. Am Nomëtteg ginn et ronn 24 Grad. Den Owend kënnen e puer Wolleken opkommen.",
-      questions:[
-        {question:'De quoi parle surtout ce passage ?',options:['De la météo','Des transports','D’une école'],answer:0,explanation:'Wieder, sonneg et Grad concernent la météo.'},
-        {question:'Quelle température est annoncée l’après-midi ?',options:['14 °C','24 °C','34 °C'],answer:1,explanation:'« 24 Grad » est annoncé pour le Nomëtteg.'},
-        {question:'Que peut-il se passer le soir ?',options:['Des nuages peuvent arriver','Il va neiger','Il fera 40 °C'],answer:0,explanation:'« e puer Wolleken opkommen » signifie que quelques nuages peuvent arriver.'}
-      ]
-    },
-    {
-      title:'Lieu et transport', level:7,
-      note:'Exercice préparatoire créé pour l’application — pas un extrait RTL.',
-      transcript:"Zu Esch fiert eng nei Buslinn vun der Gare bis bei d'Spidol. De Bus fiert all zwanzeg Minutten. Vill Leit benotzen déi nei Linn.",
-      questions:[
-        {question:'Dans quelle ville se passe l’information ?',options:['Esch','Diekirch','Clervaux'],answer:0,explanation:'Le passage commence par « Zu Esch ».'},
-        {question:'Quels lieux la ligne relie-t-elle ?',options:['La gare et l’hôpital','L’école et la piscine','L’aéroport et le centre'],answer:0,explanation:'« vun der Gare bis bei d\'Spidol ».'},
-        {question:'À quelle fréquence passe le bus ?',options:['Toutes les 10 minutes','Toutes les 20 minutes','Toutes les heures'],answer:1,explanation:'« all zwanzeg Minutten ».'}
-      ]
-    }
+    {title:'Comprendre une information simple',note:'Exercice préparatoire créé pour l’application — pas un extrait RTL.',transcript:"Haut ass d'Wieder zu Lëtzebuerg meeschtens sonneg. Am Nomëtteg ginn et ronn 24 Grad. Den Owend kënnen e puer Wolleken opkommen.",questions:[{question:'De quoi parle surtout ce passage ?',options:['De la météo','Des transports','D’une école'],answer:0,explanation:'Wieder, sonneg et Grad concernent la météo.'},{question:'Quelle température est annoncée l’après-midi ?',options:['14 °C','24 °C','34 °C'],answer:1,explanation:'« 24 Grad » est annoncé pour le Nomëtteg.'},{question:'Que peut-il se passer le soir ?',options:['Des nuages peuvent arriver','Il va neiger','Il fera 40 °C'],answer:0,explanation:'« e puer Wolleken opkommen » signifie que quelques nuages peuvent arriver.'}]},
+    {title:'Lieu et transport',note:'Exercice préparatoire créé pour l’application — pas un extrait RTL.',transcript:"Zu Esch fiert eng nei Buslinn vun der Gare bis bei d'Spidol. De Bus fiert all zwanzeg Minutten. Vill Leit benotzen déi nei Linn.",questions:[{question:'Dans quelle ville se passe l’information ?',options:['Esch','Diekirch','Clervaux'],answer:0,explanation:'Le passage commence par « Zu Esch ».'},{question:'Quels lieux la ligne relie-t-elle ?',options:['La gare et l’hôpital','L’école et la piscine','L’aéroport et le centre'],answer:0,explanation:'« vun der Gare bis bei d\'Spidol ».'},{question:'À quelle fréquence passe le bus ?',options:['Toutes les 10 minutes','Toutes les 20 minutes','Toutes les heures'],answer:1,explanation:'« all zwanzeg Minutten ».'}]}
   ];
 
   window.renderNews=function(){
-    const ready=window.state?.done?.length>=7 || false;
+    const doneCount=state?.done?.length||0;
+    const ready=doneCount>=7;
     if(!ready){
-      window.newsGate.innerHTML=`<div class="card"><div class="lockedNote"><b>🔒 Pas encore.</b><br>Le journal parlé arrive après les bases. L’objectif est d’éviter de mettre une débutante face à un débit trop rapide.</div><div class="progress"><span style="width:${Math.min(100,(window.state?.done?.length||0)/7*100)}%"></span></div><div class="tiny">${window.state?.done?.length||0}/7 étapes préparatoires terminées</div></div>`;
+      newsGate.innerHTML=`<div class="card"><div class="lockedNote"><b>🔒 Pas encore.</b><br>Le journal parlé arrive après les bases. L’objectif est d’éviter de mettre une débutante face à un débit trop rapide.</div><div class="progress"><span style="width:${Math.min(100,doneCount/7*100)}%"></span></div><div class="tiny">${doneCount}/7 étapes préparatoires terminées</div></div>`;
       return;
     }
     const items=bank.map((x,i)=>`<button class="source" onclick="openBankExercise(${i})"><b>${x.title}</b><small>${x.note}</small></button>`).join('');
-    window.newsGate.innerHTML=`<div class="card"><div class="eyebrow">Sans API payante</div><h3>Banque de compréhensions</h3><p class="muted">Les exercices sont ajoutés directement aux mises à jour de l’application. Aucun compte API ni clé n’est nécessaire.</p>${items}<a class="source" href="https://play.rtl.lu/shows/lb/journal/episodes" target="_blank" rel="noopener"><b>Ouvrir De Journal sur RTL Play</b><small>Pour s’habituer ensuite au luxembourgeois authentique</small></a><div class="notice">Les futurs exercices authentiques pourront être préparés ici puis ajoutés à cette banque lors des mises à jour, sans facturation API.</div></div><div id="bankExercise"></div>`;
+    newsGate.innerHTML=`<div class="card"><div class="eyebrow">Sans API payante</div><h3>Banque de compréhensions</h3><p class="muted">Les exercices sont ajoutés directement aux mises à jour de l’application. Aucun compte API ni clé n’est nécessaire.</p>${items}<a class="source" href="https://play.rtl.lu/shows/lb/journal/episodes" target="_blank" rel="noopener"><b>Ouvrir De Journal sur RTL Play</b><small>Pour s’habituer ensuite au luxembourgeois authentique</small></a><div class="notice">Les futurs exercices authentiques pourront être préparés ici puis ajoutés à cette banque lors des mises à jour, sans facturation API.</div></div><div id="bankExercise"></div>`;
   };
 
   window.openBankExercise=function(i){
