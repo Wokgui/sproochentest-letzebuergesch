@@ -1,4 +1,4 @@
-const CACHE = 'sproochentest-v19.2.0';
+const CACHE = 'sproochentest-v19.3.0';
 const ASSETS = ['./','index.html','manifest.json','fixes.js','icon-192.png','icon-512.png'];
 
 self.addEventListener('install', e => e.waitUntil(
@@ -15,7 +15,8 @@ async function patchedIndex(){
   catch(e){ response = await caches.match('./index.html'); }
   if(!response) return Response.error();
   let html = await response.text();
-  if(!html.includes('fixes.js')) html = html.replace('</body>','<script src="./fixes.js?v=19.2"></script></body>');
+  html = html.replace(/<script src="\.\/fixes\.js[^>]*><\/script>/g,'');
+  html = html.replace('</body>','<script src="./fixes.js?v=19.3"></script></body>');
   return new Response(html,{status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
 }
 
