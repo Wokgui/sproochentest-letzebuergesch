@@ -1,19 +1,24 @@
-# Sproochentest Lëtzebuergesch V18
+# Sproochentest Lëtzebuergesch V19
 
-Version de stabilisation de l'application de préparation au Sproochentest.
+Refonte pédagogique destinée à une personne qui part de zéro.
 
-## Vérifications V18
+## Principes V19
 
-- correction de l'erreur JavaScript qui empêchait l'initialisation complète ;
-- suppression des écrans et identifiants HTML dupliqués ;
-- restauration de l'explorateur de vocabulaire et du parcours de 30 leçons ;
-- sauvegarde locale, export JSON et export CSV Anki vérifiés ;
-- modules SRS vocabulaire et phrases, carnet d'erreurs, coach vocal, examens stricts, progression et indice de préparation contrôlés ;
-- manifeste, icônes et service worker remis en cohérence avec la V18 ;
-- navigation et console vérifiées dans un navigateur réel via un serveur local.
+- interface claire et beaucoup moins chargée ;
+- un seul parcours principal avec bouton « Continuer » ;
+- leçons déverrouillées progressivement ;
+- vocabulaire très limité au départ, puis phrases, dialogues et compréhension ;
+- seuil de 70 % pour débloquer la leçon suivante ;
+- synthèse vocale robotisée supprimée ;
+- emplacement prévu uniquement pour des audios humains vérifiés ;
+- module RTL Journal verrouillé jusqu'à acquisition des bases ;
+- architecture prévue pour de futurs exercices créés à partir de transcriptions authentiques ;
+- progression V19 stockée séparément dans le navigateur afin de permettre un vrai départ à zéro.
 
-## Utilisation
+## PWA
 
-Servir ce dossier par HTTP(S) afin que l'installation PWA, le service worker et le microphone puissent fonctionner. Les données d'apprentissage restent dans le stockage local du navigateur. Les liens officiels INLL, LLO et LOD nécessitent une connexion Internet.
+Le manifeste utilise désormais un thème clair et le service worker V19 force le renouvellement de l'ancien cache V18.
 
-La reconnaissance vocale en luxembourgeois dépend toujours du navigateur et de l'appareil. L'analyse locale ne remplace pas l'évaluation d'un examinateur.
+## Étape suivante
+
+Ajouter des enregistrements humains de mots isolés issus d'une source autorisée, puis connecter un petit backend pour transformer des transcriptions d'extraits authentiques en questions adaptées au niveau de l'apprenant.
