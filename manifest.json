@@ -1,26 +1,16 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V18",
+  "name": "Sproochentest Lëtzebuergesch V19",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
   "id": "./",
   "display": "standalone",
-  "background_color": "#11151d",
-  "theme_color": "#11151d",
+  "background_color": "#f6f8fb",
+  "theme_color": "#f6f8fb",
   "lang": "fr",
-  "description": "Préparation progressive au Sproochentest avec parcours, vocabulaire, compréhension B1, expression A2, examens blancs et ressources officielles.",
+  "description": "Apprentissage progressif du luxembourgeois depuis zéro jusqu'au Sproochentest, avec vocabulaire, révisions et compréhension authentique.",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }
