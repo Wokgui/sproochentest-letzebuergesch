@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V19.1",
+  "name": "Sproochentest Lëtzebuergesch V19.2",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -8,7 +8,7 @@
   "background_color": "#f6f8fb",
   "theme_color": "#f6f8fb",
   "lang": "fr",
-  "description": "Apprentissage progressif du luxembourgeois depuis zéro jusqu'au Sproochentest, avec audios humains, révisions et compréhension authentique.",
+  "description": "Apprentissage progressif du luxembourgeois depuis zéro jusqu'au Sproochentest, avec audios humains, révisions et compréhensions sans API payante.",
   "icons": [
     {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
     {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
