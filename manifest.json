@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V20.9",
+  "name": "Sproochentest Lëtzebuergesch V20.10",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -8,7 +8,7 @@
   "background_color": "#f5f7fb",
   "theme_color": "#f5f7fb",
   "lang": "fr",
-  "description": "Parcours guidé avec vocabulaire bidirectionnel, révision espacée, expression orale A2, compréhension B1 et navigation corrigée.",
+  "description": "Parcours guidé avec vocabulaire bidirectionnel, révision espacée, expression orale A2, compréhension B1, navigation fiable et mise à jour PWA automatique.",
   "icons": [
     {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
