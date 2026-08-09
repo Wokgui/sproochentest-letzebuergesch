@@ -1,5 +1,5 @@
-const CACHE = 'sproochentest-v20.1.0';
-const ASSETS = ['./','index.html','manifest.json','fixes.js','oral.js','patch-v197.js','patch-v198.js','patch-v199.js','patch-v200.js','patch-v201.js','flag.svg','icon-192.png','icon-512.png'];
+const CACHE = 'sproochentest-v20.2.0';
+const ASSETS = ['./','index.html','manifest.json','fixes.js','oral.js','patch-v197.js','patch-v198.js','patch-v199.js','patch-v200.js','patch-v201.js','patch-v202.js','flag.svg','icon-192.png','icon-512.png'];
 
 self.addEventListener('install', e => e.waitUntil(
   caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
@@ -22,7 +22,8 @@ async function patchedIndex(){
   html = html.replace(/<script src="\.\/patch-v199\.js[^>]*><\/script>/g,'');
   html = html.replace(/<script src="\.\/patch-v200\.js[^>]*><\/script>/g,'');
   html = html.replace(/<script src="\.\/patch-v201\.js[^>]*><\/script>/g,'');
-  html = html.replace('</body>','<script src="./fixes.js?v=19.5"></script><script src="./oral.js?v=19.6"></script><script src="./patch-v197.js?v=19.7"></script><script src="./patch-v198.js?v=19.8"></script><script src="./patch-v199.js?v=19.9"></script><script src="./patch-v200.js?v=20.0"></script><script src="./patch-v201.js?v=20.1"></script></body>');
+  html = html.replace(/<script src="\.\/patch-v202\.js[^>]*><\/script>/g,'');
+  html = html.replace('</body>','<script src="./fixes.js?v=19.5"></script><script src="./oral.js?v=19.6"></script><script src="./patch-v197.js?v=19.7"></script><script src="./patch-v198.js?v=19.8"></script><script src="./patch-v199.js?v=19.9"></script><script src="./patch-v200.js?v=20.0"></script><script src="./patch-v201.js?v=20.1"></script><script src="./patch-v202.js?v=20.2"></script></body>');
   return new Response(html,{status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
 }
 
