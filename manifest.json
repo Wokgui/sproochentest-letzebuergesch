@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V20.0",
+  "name": "Sproochentest Lëtzebuergesch V20.1",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -10,6 +10,6 @@
   "lang": "fr",
   "description": "Parcours progressif avec vocabulaire bidirectionnel, compréhension orale et expression orale intégrées à chaque leçon.",
   "icons": [
-    {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
 }
