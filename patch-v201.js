@@ -74,7 +74,11 @@ const audioBank=[
  {audio:'https://lod.lu/uploads/examples/OGG/99/993dc701e65f000216eed16a3d7b4dc0.ogg',lu:'déi nei Buslinn fiert vun der Gare op de Flughafen',fr:'La nouvelle ligne de bus va de la gare à l’aéroport.',q:'Quel trajet est annoncé ?',opts:['De la gare à l’aéroport.','De l’aéroport au magasin.','De l’école à la gare.'],a:0},
  {audio:'https://lod.lu/uploads/examples/OGG/bd/bd64bfea677c6f9acc314b9fd4ed0cb2.ogg',lu:'mir hunn eng Taass Kaffi gedronk',fr:'Nous avons bu une tasse de café.',q:'Qu’ont-ils bu ?',opts:['Une tasse de café.','Un verre d’eau.','Du thé.'],a:0}
 ];
-function setForLesson(i){if(i===0)return audioBank.slice(0,3);const start=3+(i%3);return [audioBank[start%audioBank.length],audioBank[(start+1)%audioBank.length]]}
+function setForLesson(i){
+  if(typeof window.v213BuildListening==='function')return window.v213BuildListening(i);
+  if(i===0)return audioBank.slice(0,3);
+  const start=3+(i%3);return [audioBank[start%audioBank.length],audioBank[(start+1)%audioBank.length]];
+}
 let listening=[],listenPos=0,player=null;
 function startListening(){listening=setForLesson(activeLesson);listenPos=0;renderListening()}
 function renderListening(){
@@ -82,7 +86,7 @@ function renderListening(){
   const x=listening[listenPos];
   lessonContent.innerHTML=`<div class="v201stage">Compréhension orale · ${listenPos+1}/${listening.length}</div><h2 style="margin:6px 0 10px">Écoute sans lire</h2><button class="checkpointAudio" onclick="v201Play(this)">▶ Écouter</button><div class="selfQ" style="font-size:19px">${x.q}</div>${x.opts.map((o,i)=>`<button class="v201choice" onclick="v201Answer(${i},this)">${o}</button>`).join('')}<div id="v201RevealAudio"></div>`;
 }
-window.v201Play=function(btn){const x=listening[listenPos];try{player?.pause();player=new Audio(x.audio);btn.textContent='🔊 Lecture…';player.play().then(()=>player.onended=()=>btn.textContent='▶ Réécouter').catch(()=>btn.textContent='Réessayer')}catch(e){btn.textContent='Réessayer'}};
+window.v201Play=function(btn){const x=listening[listenPos];if(x.speech&&typeof window.v213Speak==='function'){window.v213Speak(x.speech,btn);return}try{player?.pause();player=new Audio(x.audio);btn.textContent='🔊 Lecture…';player.play().then(()=>player.onended=()=>btn.textContent='▶ Réécouter').catch(()=>btn.textContent='Réessayer')}catch(e){btn.textContent='Réessayer'}};
 window.v201Answer=function(choice,btn){
   const x=listening[listenPos],buttons=btn.parentElement.querySelectorAll('.v201choice');
   buttons.forEach((b,i)=>{b.disabled=true;if(i===x.a)b.classList.add('good')});if(choice!==x.a)btn.classList.add('bad');
