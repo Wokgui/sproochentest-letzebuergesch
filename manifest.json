@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V20.7",
+  "name": "Sproochentest Lëtzebuergesch V20.8",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -8,7 +8,7 @@
   "background_color": "#f5f7fb",
   "theme_color": "#f5f7fb",
   "lang": "fr",
-  "description": "Parcours guidé avec vocabulaire bidirectionnel, phrases en contexte, dialogues, révision espacée, coach oral et compréhension B1 progressive à plusieurs questions.",
+  "description": "Parcours guidé avec vocabulaire bidirectionnel, phrases en contexte, dialogues, révision espacée, expression orale A2 progressive, simulation chronométrée et compréhension B1 progressive.",
   "icons": [
     {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
