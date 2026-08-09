@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V20.2",
+  "name": "Sproochentest Lëtzebuergesch V20.4",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -8,7 +8,7 @@
   "background_color": "#f5f7fb",
   "theme_color": "#f5f7fb",
   "lang": "fr",
-  "description": "Parcours progressif : vocabulaire complet dans les deux sens, compréhension orale et expression orale guidée avec auto-évaluation.",
+  "description": "Parcours progressif avec vocabulaire bidirectionnel, compréhension orale, tuteur vocal et préparation ciblée au Sproochentest.",
   "icons": [
     {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
