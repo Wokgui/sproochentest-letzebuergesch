@@ -1,76 +1,55 @@
-// V19.3 — correctif audio Android robuste
+// V19.4 — progression visible, tests complets et oral séparé
 (function(){
   'use strict';
-  const cache = new Map();
-  let player = null;
+  const cache=new Map(); let player=null;
+  const extra=[
+    ['La famille',[['Mamm','mère'],['Papp','père'],['Kand','enfant'],['Famill','famille']]],
+    ['Les jours',[['Méindeg','lundi'],['Dënschdeg','mardi'],['Mëttwoch','mercredi'],['Donneschdeg','jeudi'],['Freideg','vendredi']]],
+    ['Les moments de la journée',[['Moien','matin'],['Mëtteg','midi'],['Owend','soir'],['Nuecht','nuit']]],
+    ['L’heure',[['Auer','heure'],['hallef','demie'],['Véierel','quart'],['Minutt','minute']]],
+    ['La maison',[['Haus','maison'],['Kichen','cuisine'],['Schlofzëmmer','chambre'],['Buedzëmmer','salle de bain']]],
+    ['Manger et boire',[['Waasser','eau'],['Brout','pain'],['Mëllech','lait'],['Kaffi','café'],['iessen','manger']]],
+    ['Faire les courses',[['Buttek','magasin'],['Präis','prix'],['bezuelen','payer'],['kafen','acheter']]],
+    ['Se déplacer',[['Bus','bus'],['Zuch','train'],['Gare','gare'],['Auto','voiture'],['fueren','aller en véhicule']]],
+    ['En ville',[['Strooss','rue'],['Plaz','place'],['riets','à droite'],['lénks','à gauche']]],
+    ['Le travail',[['Aarbecht','travail'],['schaffen','travailler'],['Kolleg','collègue'],['Büro','bureau']]],
+    ['Les loisirs',[['Sport','sport'],['Musek','musique'],['liesen','lire'],['spadséieren','se promener']]],
+    ['La météo',[['Wieder','météo'],['Sonn','soleil'],['Reen','pluie'],['kal','froid'],['waarm','chaud']]],
+    ['Le corps et la santé',[['Kapp','tête'],['Hand','main'],['Dokter','médecin'],['Péng','douleur'],['krank','malade']]],
+    ['Les vêtements',[['Jackett','veste'],['Schong','chaussures'],['Box','pantalon'],['Hemd','chemise']]],
+    ['Au restaurant',[['Menu','menu'],['Iessen','repas'],['Gedrénks','boisson'],['Rechnung','addition']]],
+    ['Parler de ses goûts',[['gär','volontiers / aimer'],['léiwer','préférer'],['gutt','bon / bien'],['net gär','ne pas aimer']]],
+    ['Le passé récent',[['gëschter','hier'],['war','était'],['hat','avait'],['gemaach','fait']]],
+    ['Le futur et les projets',[['muer','demain'],['wäert','va / sera'],['plangen','prévoir'],['goen','aller']]],
+    ['Décrire une personne',[['grouss','grand'],['kleng','petit'],['jonk','jeune'],['al','âgé']]],
+    ['Décrire une image',[['Bild','image'],['gesinn','voir'],['virun','devant'],['hannert','derrière'],['nieft','à côté de']]],
+    ['Donner son avis',[['ech mengen','je pense'],['fir mech','pour moi'],['well','parce que'],['awer','mais']]],
+    ['Préparation Sproochentest',[['verstoen','comprendre'],['widderhuelen','répéter'],['méi lues','plus lentement'],['Ech weess et net','Je ne sais pas']]]
+  ];
+  extra.forEach(x=>lessons.push({title:x[0],sub:x[1].length+' éléments à maîtriser',words:x[1],quiz:[]}));
 
-  function clean(s){return String(s||'').replace(/[.…?!,:;]/g,'').trim();}
-  function norm(s){return String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^file:/,'').replace(/\.(ogg|oga|mp3|wav|webm)$/,'').replace(/[^a-z0-9]/g,'');}
-  function statusFor(btn){return btn.parentElement && btn.parentElement.querySelector('.audioStatus');}
-  function wordFor(btn){const row=btn.closest('.word');return clean(row && row.querySelector('.lux') ? row.querySelector('.lux').textContent : '');}
+  const style=document.createElement('style');style.textContent=`
+    .overviewGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}.metric{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}.metric strong{display:block;font-size:24px}.metric span{font-size:12px;color:var(--muted)}
+    .skillCard{padding:15px;border:1px solid var(--line);border-radius:16px;margin:10px 0;background:#fff}.skillCard h4{margin:0 0 5px}.skillCard p{margin:0;color:var(--muted);font-size:13px;line-height:1.4}.phase{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f5f8fc;font-size:13px}.selfQ{font-size:23px;font-weight:850;margin:18px 0}.reveal{padding:16px;border-radius:14px;background:#eef5fb;margin:12px 0;font-size:22px;font-weight:850}.judge{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.judge button{padding:14px;border-radius:13px;font-weight:800}.yes{background:var(--green2);color:var(--green)}.no{background:var(--red2);color:var(--red)}
+  `;document.head.appendChild(style);
 
-  async function searchCommons(word){
-    if(cache.has(word)) return cache.get(word);
-    const queries=[
-      `intitle:${word} incategory:"Luxembourgish pronunciation"`,
-      `"${word}" incategory:"Luxembourgish pronunciation"`,
-      `"${word}" Luxembourgish pronunciation`
-    ];
-    const target=norm(word);
-    for(const q of queries){
-      try{
-        const url='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=30&prop=imageinfo&iiprop=url|extmetadata&format=json&origin=*&gsrsearch='+encodeURIComponent(q);
-        const r=await fetch(url,{cache:'no-store'});
-        if(!r.ok) continue;
-        const j=await r.json();
-        const pages=Object.values((j.query&&j.query.pages)||{});
-        let best=null,score=-1;
-        for(const p of pages){
-          const ii=p.imageinfo&&p.imageinfo[0]; if(!ii||!ii.url) continue;
-          const title=norm(p.title);
-          const meta=Object.values(ii.extmetadata||{}).map(v=>v&&v.value||'').join(' ').replace(/<[^>]*>/g,' ').toLowerCase();
-          let s=0;
-          if(title===target||title===('lb'+target)) s+=100;
-          if(title.includes(target)) s+=40;
-          if(meta.includes(word.toLowerCase())) s+=35;
-          if(meta.includes('luxembourgish')||meta.includes('lëtzebuerg')) s+=20;
-          if(s>score){score=s;best=ii.url;}
-        }
-        if(best&&score>=40){cache.set(word,best);return best;}
-      }catch(e){}
-    }
-    cache.set(word,null);return null;
-  }
+  function clean(s){return String(s||'').replace(/[.…?!,:;]/g,'').trim()}
+  function norm(s){return String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^file:/,'').replace(/\.(ogg|oga|mp3|wav|webm)$/,'').replace(/[^a-z0-9]/g,'')}
+  async function audioUrl(word){if(cache.has(word))return cache.get(word);const target=norm(word);for(const q of [`intitle:${word} incategory:"Luxembourgish pronunciation"`,`"${word}" Luxembourgish pronunciation`]){try{const u='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=30&prop=imageinfo&iiprop=url|extmetadata&format=json&origin=*&gsrsearch='+encodeURIComponent(q);const j=await fetch(u,{cache:'no-store'}).then(r=>r.json());let best=null,score=-1;for(const p of Object.values(j.query?.pages||{})){const ii=p.imageinfo?.[0];if(!ii)continue;const t=norm(p.title);let s=t.includes(target)?40:0;if(t===target||t==='lb'+target)s+=100;if(s>score){score=s;best=ii.url}}if(best&&score>=40){cache.set(word,best);return best}}catch(e){}}cache.set(word,null);return null}
+  async function handleAudio(btn){const row=btn.closest('.word'),word=clean(row?.querySelector('.lux')?.textContent),st=row?.querySelector('.audioStatus');btn.textContent='⏳ Recherche…';btn.disabled=true;if(st)st.textContent='Recherche de la prononciation humaine…';if(!word||word.includes(' ')){btn.disabled=false;btn.textContent='🔊 Écouter';if(st)st.textContent='Audio disponible uniquement pour les mots isolés.';return}const url=await audioUrl(word);btn.disabled=false;btn.textContent='🔊 Écouter';if(!url){if(st)st.textContent='Pas encore d’audio humain vérifié.';return}try{player?.pause();player=new Audio(url);await player.play();if(st)st.textContent='Prononciation humaine'}catch(e){if(st)st.textContent='Lecture impossible sur cet appareil.'}}
+  document.addEventListener('click',e=>{const b=e.target.closest?.('.audioBtn');if(!b)return;e.preventDefault();e.stopImmediatePropagation();handleAudio(b)},true);
 
-  async function handle(btn){
-    const st=statusFor(btn), word=wordFor(btn), original='🔊 Écouter';
-    btn.disabled=true; btn.textContent='⏳ Recherche…';
-    if(st) st.textContent='Recherche de la prononciation humaine…';
-    if(!word){btn.disabled=false;btn.textContent=original;if(st)st.textContent='Mot introuvable dans cette ligne.';return;}
-    if(word.includes(' ')){btn.disabled=false;btn.textContent=original;if(st)st.textContent='Audio prévu uniquement pour les mots isolés.';return;}
-    const url=await searchCommons(word);
-    if(!url){btn.disabled=false;btn.textContent=original;if(st)st.textContent='Pas encore d’audio humain vérifié pour « '+word+' ».';return;}
-    try{
-      if(player){player.pause();player.currentTime=0;}
-      player=new Audio(url);
-      player.preload='auto';
-      await player.play();
-      btn.disabled=false;btn.textContent='🔊 Lecture…';
-      if(st) st.textContent='Prononciation humaine';
-      player.onended=function(){btn.textContent=original;if(st)st.textContent='Prononciation humaine disponible';};
-      player.onerror=function(){btn.textContent=original;if(st)st.textContent='Le fichier audio n’a pas pu être lu.';};
-    }catch(e){
-      btn.disabled=false;btn.textContent=original;if(st)st.textContent='Lecture bloquée. Réappuie une fois.';
-    }
-  }
+  const oldRenderHome=renderHome;
+  window.renderHome=function(){oldRenderHome();const totalWords=lessons.reduce((n,l)=>n+l.words.length,0),doneWords=lessons.filter((l,i)=>state.done.includes(i)).reduce((n,l)=>n+l.words.length,0);const hero=document.querySelector('#home .hero');let box=document.getElementById('overviewBox');if(!box){box=document.createElement('div');box.id='overviewBox';hero.insertAdjacentElement('afterend',box)}const done=state.done.length,pct=Math.round(done/lessons.length*100);box.innerHTML=`<div class="card"><div class="eyebrow">Vue d'ensemble</div><h3 style="margin:6px 0">Programme complet</h3><div class="overviewGrid"><div class="metric"><strong>${done}/${lessons.length}</strong><span>leçons terminées</span></div><div class="metric"><strong>${pct}%</strong><span>progression globale</span></div><div class="metric"><strong>${doneWords}/${totalWords}</strong><span>éléments vus</span></div><div class="metric"><strong>${lessons.length*2}</strong><span>tests bidirectionnels minimum</span></div></div><div class="phase"><b>Étape 1 · Bases</b> — leçons 1 à 8</div><div class="phase"><b>Étape 2 · Vie quotidienne</b> — leçons 9 à 18</div><div class="phase"><b>Étape 3 · S'exprimer</b> — leçons 19 à 25</div><div class="phase"><b>Étape 4 · Oral</b> — leçons 26 à 29</div><div class="phase"><b>Étape 5 · Sproochentest</b> — leçon 30 + entraînements</div></div><div class="sectionTitle"><h3>Les 3 parties</h3><small>progressions distinctes</small></div><div class="skillCard"><h4>📘 Apprentissage progressif</h4><p>30 leçons. Vocabulaire, phrases et structures. Chaque élément est contrôlé dans les deux sens sans QCM.</p></div><div class="skillCard"><h4>🎧 Compréhension orale</h4><p>Écouter des mots puis des phrases, dialogues et contenus authentiques. Questions de sens global, détails, nombres, lieux et personnes.</p></div><div class="skillCard"><h4>🗣️ Expression orale</h4><p>Se présenter, répondre spontanément, raconter, donner son avis et décrire une image. Réponse à voix haute puis auto-évaluation.</p></div>`;progressText.textContent=`${done}/${lessons.length} leçons · ${pct}%`}
 
-  document.addEventListener('click',function(e){
-    const btn=e.target.closest&&e.target.closest('.audioBtn');
-    if(!btn) return;
-    e.preventDefault();e.stopImmediatePropagation();
-    handle(btn);
-  },true);
+  let cards=[],cardIndex=0,selfGood=0,revealed=false;
+  window.startQuiz=function(){cards=[];lessons[activeLesson].words.forEach(w=>{cards.push({prompt:w[0],answer:w[1],dir:'Luxembourgeois → français'});cards.push({prompt:w[1],answer:w[0],dir:'Français → luxembourgeois'})});cardIndex=0;selfGood=0;renderSelfCard()}
+  window.renderSelfCard=function(){if(cardIndex>=cards.length){finishSelfTest();return}const c=cards[cardIndex];revealed=false;lessonContent.innerHTML=`<div class="card"><div class="eyebrow">Test complet · ${cardIndex+1}/${cards.length}</div><div class="tiny" style="margin-top:6px">${c.dir}</div><div class="selfQ">${c.prompt}</div><p class="muted">Réponds mentalement ou à voix haute. Aucune proposition n'est donnée.</p><button class="primary" onclick="revealSelf()">Révéler la réponse</button><div id="selfReveal"></div></div>`}
+  window.revealSelf=function(){if(revealed)return;revealed=true;const c=cards[cardIndex];selfReveal.innerHTML=`<div class="reveal">${c.answer}</div><div class="judge"><button class="no" onclick="judgeSelf(false)">À revoir</button><button class="yes" onclick="judgeSelf(true)">Je savais</button></div>`}
+  window.judgeSelf=function(ok){if(ok)selfGood++;cardIndex++;renderSelfCard()}
+  window.finishSelfTest=function(){const total=cards.length,pct=Math.round(selfGood/total*100),ok=pct>=80;if(ok&&!state.done.includes(activeLesson)){state.done.push(activeLesson);state.done.sort((a,b)=>a-b);save()}lessonContent.innerHTML=`<div class="card" style="text-align:center;padding:28px"><div style="font-size:48px">${ok?'✓':'↻'}</div><h2>${ok?'Leçon maîtrisée':'Encore à consolider'}</h2><p class="muted">${selfGood}/${total} réponses déclarées sues · ${pct} %. ${ok?'La leçon suivante est débloquée.':'Il faut 80 % pour valider.'}</p><button class="primary" onclick="${ok?"show('home')":"openLesson(activeLesson)"}">${ok?'Retour au parcours':'Revoir la leçon'}</button></div>`}
 
-  document.querySelectorAll('.brand small').forEach(function(x){x.textContent='Départ zéro · V19.3';});
-  document.title='Sproochentest Lëtzebuergesch V19.3';
+  window.renderNews=function(){const done=state.done.length;newsGate.innerHTML=`<div class="card"><div class="eyebrow">🎧 Compréhension orale</div><h3>Progression spécifique</h3><p class="muted">1. mots isolés → 2. phrases courtes → 3. dialogues → 4. annonces et informations → 5. extraits authentiques.</p><div class="progress"><span style="width:${Math.min(100,done/20*100)}%"></span></div><div class="tiny">Niveau oral débloqué progressivement avec les leçons</div></div><div class="card"><div class="eyebrow">🗣️ Expression orale</div><h3>Ce qui sera entraîné</h3><div class="pathItem"><div class="dot">1</div><div><b>Se présenter</b><small>Nom, domicile, famille, travail, loisirs.</small></div></div><div class="pathItem"><div class="dot">2</div><div><b>Répondre sans choix</b><small>Questions courantes avec réponse à voix haute.</small></div></div><div class="pathItem"><div class="dot">3</div><div><b>Décrire et raconter</b><small>Image, situation, journée, passé et projets.</small></div></div><div class="pathItem"><div class="dot">4</div><div><b>Donner son avis</b><small>Réponse développée avec raisons simples.</small></div></div></div>`}
+
+  document.querySelectorAll('.brand small').forEach(x=>x.textContent='Départ zéro · V19.4');document.title='Sproochentest Lëtzebuergesch V19.4';renderHome();
 })();
