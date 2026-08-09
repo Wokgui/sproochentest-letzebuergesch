@@ -1,0 +1,11 @@
+// V20.9 — navigation parcours et reset robustes
+(function(){
+'use strict';
+function firstIncomplete(){const done=new Set(state.done||[]);for(let i=0;i<lessons.length;i++)if(!done.has(i))return i;return lessons.length-1}
+window.v209OpenLesson=function(i){i=Number(i);if(!Number.isFinite(i)||i<0||i>=lessons.length)return;activeLesson=i;quizIndex=0;quizScore=0;if(!Array.isArray(state.seen))state.seen=[];lessons[i].words.forEach(w=>{if(!state.seen.includes(w[0]))state.seen.push(w[0])});localStorage.setItem(KEY,JSON.stringify(state));renderLessonWords();show('lesson')};
+window.v209Continue=function(){v209OpenLesson(firstIncomplete())};
+window.resetV20=function(){if(!confirm('Tout réinitialiser ? Toute la progression, les révisions et les résultats locaux seront effacés.'))return;Object.keys(localStorage).filter(k=>k.startsWith('sproochentest-')).forEach(k=>localStorage.removeItem(k));state={done:[],seen:[],streak:1};activeLesson=0;quizIndex=0;quizScore=0;localStorage.setItem(KEY,JSON.stringify(state));renderHome();show('home')};
+window.redoAnyLesson=function(){const s=document.getElementById('v20LessonSelect');if(!s)return;v209OpenLesson(Number(s.value))};
+const prevHome=window.renderHome;window.renderHome=function(){prevHome();const next=firstIncomplete();const hero=document.querySelector('#home .v205today');if(hero){const h=hero.querySelector('h2');if(h)h.textContent=`Leçon ${next+1} · ${lessons[next].title}`;const b=hero.querySelector('button.primary');if(b){b.textContent=(state.done||[]).length>=lessons.length?'Revoir le parcours':'Continuer le parcours';b.onclick=v209Continue;b.removeAttribute('onclick')}}const c=document.getElementById('continueBtn');if(c){c.onclick=v209Continue;c.removeAttribute('onclick')}const reset=document.querySelector('#bottomTools .reset');if(reset){reset.onclick=resetV20;reset.removeAttribute('onclick')}document.querySelectorAll('.brand small').forEach(x=>x.textContent='V20.9 · navigation corrigée')};
+document.title='Sproochentest Lëtzebuergesch V20.9';renderHome();
+})();
