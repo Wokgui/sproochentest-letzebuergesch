@@ -1,5 +1,5 @@
 {
-  "name": "Sproochentest Lëtzebuergesch V19.9",
+  "name": "Sproochentest Lëtzebuergesch V20.0",
   "short_name": "Sproochentest",
   "start_url": "./",
   "scope": "./",
@@ -8,9 +8,8 @@
   "background_color": "#f6f8fb",
   "theme_color": "#f6f8fb",
   "lang": "fr",
-  "description": "Parcours progressif avec vocabulaire bidirectionnel complet, écoutes humaines, transcriptions luxembourgeoises et allemandes masquées, compréhension et expression orale guidées.",
+  "description": "Parcours progressif avec vocabulaire bidirectionnel, compréhension orale et expression orale intégrées à chaque leçon.",
   "icons": [
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {"src":"flag.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
   ]
 }
