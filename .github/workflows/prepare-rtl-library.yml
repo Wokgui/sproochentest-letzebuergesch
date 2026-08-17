@@ -2,17 +2,13 @@ name: Préparer bibliothèque RTL
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 */6 * * *'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/prepare-rtl-library.yml'
+    - cron: '17 2 * * *'
 permissions:
   contents: write
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,7 +16,7 @@ jobs:
           python-version: '3.12'
       - name: Préparer les journaux RTL manquants
         env:
-          RTL_LIMIT: '12'
+          RTL_LIMIT: '3'
         run: python scripts/prepare_rtl_library.py
       - name: Enregistrer les VTT dans l'application
         run: |
