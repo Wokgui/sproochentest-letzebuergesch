@@ -1,0 +1,21 @@
+{
+  "name": "letzlies-readle",
+  "version": "3.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html styles.css sw.js manifest.webmanifest icon-192.png icon-512.png icon-maskable-192.png icon-maskable-512.png icon.svg apple-touch-icon.png dist/ && cp -r covers src public dist/",
+    "serve": "node scripts/serve.mjs",
+    "books:import": "node scripts/import-books.mjs",
+    "audio:offline": "node scripts/import-rhvoice.mjs",
+    "audit": "node scripts/audit.mjs",
+    "test": "npm run audit && npm run linguistic:audit && npm run mobile:audit && npm run books:audit && npm run state:test && npm run planner:test && npm run journey:test && npm run remediation:test && node scripts/smoke.mjs",
+    "linguistic:audit": "node scripts/linguistic-audit.mjs",
+    "mobile:audit": "node scripts/mobile-audit.mjs",
+    "books:audit": "node scripts/books-audit.mjs",
+    "state:test": "node scripts/state-test.mjs",
+    "planner:test": "node scripts/planner-test.mjs",
+    "journey:test": "node scripts/journey-test.mjs",
+    "remediation:test": "node scripts/remediation-test.mjs"
+  }
+}

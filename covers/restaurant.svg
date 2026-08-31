@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+<rect width="800" height="460" rx="36" fill="#eef0eb"/>
+<circle cx="620" cy="110" r="135" fill="#dce4dd"/>
+<rect x="85" y="90" width="330" height="250" rx="28" fill="#ffffff" opacity=".82"/>
+<text x="250" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="110" fill="#2d3431">🍽</text>
+<text x="470" y="330" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#2d3431">Restaurant</text>
+<path d="M470 354h210" stroke="#7c8b84" stroke-width="8" stroke-linecap="round"/>
+</svg>
