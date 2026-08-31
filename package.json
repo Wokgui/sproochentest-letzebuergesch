@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "mkdir -p dist && cp index.html styles.css sw.js manifest.webmanifest icon-192.png icon-512.png icon-maskable-192.png icon-maskable-512.png icon.svg apple-touch-icon.png dist/ && cp -r covers src public dist/",
     "serve": "node scripts/serve.mjs",
     "books:import": "node scripts/import-books.mjs",
     "audio:offline": "node scripts/import-rhvoice.mjs",
