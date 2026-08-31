@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460">
+<rect width="800" height="460" rx="36" fill="#eee8df"/>
+<circle cx="625" cy="115" r="142" fill="#d5c8b7" opacity=".82"/>
+<rect x="78" y="82" width="340" height="255" rx="30" fill="#fff" opacity=".78"/>
+<text x="248" y="238" text-anchor="middle" font-family="Arial, sans-serif" font-size="86" font-weight="700" fill="#303733">⌂</text>
+<text x="470" y="328" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="#303733">Noperen</text>
+<path d="M470 353h205" stroke="#7d8982" stroke-width="8" stroke-linecap="round"/>
+</svg>
