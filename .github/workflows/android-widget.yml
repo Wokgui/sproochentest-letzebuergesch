@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -46,9 +46,23 @@ jobs:
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/emploi-du-temps-widget.apk
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: emploi-du-temps-widget-apk
           path: android-widget/app/build/outputs/apk/debug/emploi-du-temps-widget.apk
           if-no-files-found: error
+
+      - name: Publish public APK download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK="app/build/outputs/apk/debug/emploi-du-temps-widget.apk"
+          if gh release view edt-widget-v1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload edt-widget-v1.0 "$APK" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create edt-widget-v1.0 "$APK" \
+              --target "$GITHUB_SHA" \
+              --title "Emploi du temps widget v1.0" \
+              --notes "Widget Android 4×2 : cours actuel, prochain cours, compte à rebours, progression de la journée et actualisation automatique."
+          fi
