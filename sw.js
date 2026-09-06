@@ -1,4 +1,4 @@
-const CACHE='letzlies-v34';
+const CACHE='letzlies-v35';
 const CORE=['/','/index.html','/styles.css','/manifest.webmanifest','/icon.svg','/icon-192.png','/icon-512.png','/icon-maskable-192.png','/icon-maskable-512.png','/apple-touch-icon.png','/src/app.js','/src/conversation.js','/src/data.js','/src/audio.js','/src/dictionary.js','/covers/intro.svg','/covers/cafe.svg','/covers/train.svg','/covers/late.svg','/covers/languages.svg','/covers/free.svg','/covers/mobility.svg','/covers/history.svg','/covers/shopping.svg','/covers/weekend.svg','/covers/fair.svg','/covers/mullerthal.svg','/covers/moselle.svg','/covers/restaurant.svg','/covers/home.svg','/covers/bus.svg','/covers/apartment.svg','/covers/doctor.svg','/covers/remote.svg','/covers/missed-train.svg','/covers/weather.svg','/covers/sport.svg','/covers/cinema.svg','/covers/course.svg','/covers/neighbor.svg','/covers/energy.svg','/covers/concert.svg','/covers/commune.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));});
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting();});
