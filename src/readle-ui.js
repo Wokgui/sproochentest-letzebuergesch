@@ -83,12 +83,61 @@ function enhanceHome(screen) {
   });
 }
 
+function enhanceSprooch(screen) {
+  if (!screen || screen.dataset.readleSproochStructured === '1') return;
+  const grid = screen.querySelector('.sprooch-grid');
+  const pageHead = screen.querySelector('.page-head');
+  if (!grid || !pageHead) return;
+  screen.dataset.readleSproochStructured = '1';
+
+  const quick = screen.querySelector('.quick-oral-entry');
+  const readiness = screen.querySelector('.readiness-card');
+  const examPath = screen.querySelector('.exam-path-card');
+  const examPrep = screen.querySelector('.exam-prep-mini');
+  const strict = screen.querySelector('.strict-exam-entry');
+  const examSummary = screen.querySelector('.exam-summary');
+  const topicTitle = screen.querySelector('.sprooch-subtitle');
+  const topicGrid = screen.querySelector('.oral-topic-grid');
+
+  const practice = document.createElement('section');
+  practice.className = 'readle-sprooch-section readle-sprooch-practice';
+  practice.append(sectionHead('PRATIQUER', 'Parler et s’entraîner', 'les activités utiles au quotidien'));
+  if (quick) practice.append(quick);
+  practice.append(grid);
+  pageHead.insertAdjacentElement('afterend', practice);
+
+  if (topicTitle || topicGrid) {
+    const themes = document.createElement('section');
+    themes.className = 'readle-sprooch-section readle-sprooch-themes';
+    themes.append(sectionHead('THÈMES', 'Oral A2'));
+    if (topicTitle) topicTitle.remove();
+    if (topicGrid) themes.append(topicGrid);
+    practice.insertAdjacentElement('afterend', themes);
+  }
+
+  if (readiness || examPath || examPrep || strict || examSummary) {
+    const exam = document.createElement('section');
+    exam.className = 'readle-sprooch-section readle-sprooch-exam';
+    exam.append(sectionHead('PARCOURS', 'Préparation examen', 'diagnostic et simulations'));
+    if (readiness) exam.append(readiness);
+    if (examPath) exam.append(examPath);
+    if (examPrep) exam.append(examPrep);
+    if (strict) exam.append(strict);
+    if (examSummary) exam.append(examSummary);
+    screen.append(exam);
+  }
+}
+
 function enhanceScreen(root = document) {
   const home = root.querySelector('.screen.home');
   if (home) enhanceHome(home);
 
   root.querySelectorAll('.screen:not(.home)').forEach(screen => {
     screen.classList.add('readle-screen');
+  });
+
+  root.querySelectorAll('.screen').forEach(screen => {
+    if (screen.querySelector('.sprooch-grid')) enhanceSprooch(screen);
   });
 
   root.querySelectorAll('.reader').forEach(reader => {
