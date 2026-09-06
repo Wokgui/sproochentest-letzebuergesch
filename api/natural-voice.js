@@ -11,32 +11,48 @@ function sendJson(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+async function synthesize(text) {
+  const directedText = `[warm, friendly, relaxed and natural conversational delivery; speak Luxembourgish fluently, with human rhythm and subtle expression] ${text}`;
+  return generateSpeech({
+    model: gateway.speechModel(MODEL),
+    text: directedText,
+    voice: VOICE,
+    outputFormat: 'mp3',
+    abortSignal: AbortSignal.timeout(12000),
+    maxRetries: 1
+  });
+}
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return sendJson(res, 405, { error: 'METHOD_NOT_ALLOWED' });
-  if (String(req.headers['sec-fetch-site'] || '').toLowerCase() === 'cross-site') {
+  const isHealth = req.method === 'GET' && req.query?.health === '1';
+  if (!isHealth && req.method !== 'POST') return sendJson(res, 405, { error: 'METHOD_NOT_ALLOWED' });
+  if (!isHealth && String(req.headers['sec-fetch-site'] || '').toLowerCase() === 'cross-site') {
     return sendJson(res, 403, { error: 'CROSS_SITE_BLOCKED' });
   }
 
-  let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
+  let text = 'Moien!';
+  if (!isHealth) {
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch { body = {}; }
+    }
+    text = typeof body?.text === 'string' ? body.text.trim().slice(0, 900) : '';
+    if (!text) return sendJson(res, 400, { error: 'EMPTY_TEXT' });
   }
 
-  const text = typeof body?.text === 'string' ? body.text.trim().slice(0, 900) : '';
-  if (!text) return sendJson(res, 400, { error: 'EMPTY_TEXT' });
-
   try {
-    const directedText = `[warm, friendly, relaxed and natural conversational delivery; speak Luxembourgish fluently, with human rhythm and subtle expression] ${text}`;
-    const result = await generateSpeech({
-      model: gateway.speechModel(MODEL),
-      text: directedText,
-      voice: VOICE,
-      outputFormat: 'mp3',
-      abortSignal: AbortSignal.timeout(12000),
-      maxRetries: 1
-    });
-
+    const result = await synthesize(text);
     const bytes = Buffer.from(result.audio.uint8Array);
+
+    if (isHealth) {
+      return sendJson(res, 200, {
+        ok: bytes.length > 0,
+        engine: MODEL,
+        mediaType: result.audio.mediaType || 'audio/mpeg',
+        bytes: bytes.length
+      });
+    }
+
     res.statusCode = 200;
     res.setHeader('Content-Type', result.audio.mediaType || 'audio/mpeg');
     res.setHeader('Content-Length', String(bytes.length));
