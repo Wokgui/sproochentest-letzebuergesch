@@ -1,8 +1,10 @@
-import { experimental_generateSpeech as generateSpeech } from 'ai';
-import { gateway } from '@ai-sdk/gateway';
+const API_BASE = 'https://sproochmaschinn.lu';
+const VOICE_MODEL = 'maxine';
+const SESSION_TTL_MS = 8 * 60 * 1000;
 
-const MODEL = 'fish-audio/s2.1-pro-free';
-const VOICE = '933563129e564b19a115bedd57b7406a';
+let sessionId = null;
+let sessionExpiresAt = 0;
+let sessionPromise = null;
 
 function sendJson(res, status, data) {
   res.statusCode = status;
@@ -11,16 +13,78 @@ function sendJson(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+async function fetchWithTimeout(url, options = {}, timeout = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function createSession() {
+  const response = await fetchWithTimeout(`${API_BASE}/api/session`, { method: 'POST' }, 8000);
+  if (!response.ok) throw new Error(`SPROOCH_SESSION_${response.status}`);
+  const data = await response.json();
+  if (!data?.session_id) throw new Error('SPROOCH_SESSION_INVALID');
+  sessionId = data.session_id;
+  sessionExpiresAt = Date.now() + SESSION_TTL_MS;
+  return sessionId;
+}
+
+async function ensureSession(force = false) {
+  if (!force && sessionId && Date.now() < sessionExpiresAt) return sessionId;
+  if (sessionPromise) return sessionPromise;
+  sessionPromise = createSession().finally(() => { sessionPromise = null; });
+  return sessionPromise;
+}
+
+async function requestTts(text, forceSession = false) {
+  const sid = await ensureSession(forceSession);
+  const response = await fetchWithTimeout(`${API_BASE}/api/tts/${encodeURIComponent(sid)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, model: VOICE_MODEL })
+  }, 10000);
+
+  if (!response.ok) {
+    if (!forceSession && [404, 408, 410].includes(response.status)) {
+      sessionId = null;
+      sessionExpiresAt = 0;
+      return requestTts(text, true);
+    }
+    throw new Error(`SPROOCH_TTS_${response.status}`);
+  }
+
+  const data = await response.json();
+  if (!data?.request_id) throw new Error('SPROOCH_TTS_INVALID');
+  sessionExpiresAt = Date.now() + SESSION_TTL_MS;
+  return data.request_id;
+}
+
+async function pollResult(requestId) {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const response = await fetchWithTimeout(`${API_BASE}/api/result/${encodeURIComponent(requestId)}`, {}, 8000);
+    if (!response.ok) throw new Error(`SPROOCH_RESULT_${response.status}`);
+    const data = await response.json();
+
+    if (data?.status === 'completed') {
+      const base64 = data?.result?.data;
+      if (!base64 || typeof base64 !== 'string') throw new Error('SPROOCH_AUDIO_EMPTY');
+      return Buffer.from(base64, 'base64');
+    }
+    if (data?.status === 'failed' || data?.status === 'error') {
+      throw new Error(data?.error || 'SPROOCH_TTS_FAILED');
+    }
+    await new Promise(resolve => setTimeout(resolve, 350));
+  }
+  throw new Error('SPROOCH_TTS_TIMEOUT');
+}
+
 async function synthesize(text) {
-  const directedText = `[warm, friendly, relaxed and natural conversational delivery; speak Luxembourgish fluently, with human rhythm and subtle expression] ${text}`;
-  return generateSpeech({
-    model: gateway.speechModel(MODEL),
-    text: directedText,
-    voice: VOICE,
-    outputFormat: 'mp3',
-    abortSignal: AbortSignal.timeout(12000),
-    maxRetries: 1
-  });
+  const requestId = await requestTts(text);
+  return pollResult(requestId);
 }
 
 export default async function handler(req, res) {
@@ -30,7 +94,7 @@ export default async function handler(req, res) {
     return sendJson(res, 403, { error: 'CROSS_SITE_BLOCKED' });
   }
 
-  let text = 'Moien!';
+  let text = 'Moien! Wéi geet et dir?';
   if (!isHealth) {
     let body = req.body;
     if (typeof body === 'string') {
@@ -41,26 +105,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const result = await synthesize(text);
-    const bytes = Buffer.from(result.audio.uint8Array);
-
+    const bytes = await synthesize(text);
     if (isHealth) {
       return sendJson(res, 200, {
         ok: bytes.length > 0,
-        engine: MODEL,
-        mediaType: result.audio.mediaType || 'audio/mpeg',
+        engine: 'sproochmaschinn.lu',
+        voice: VOICE_MODEL,
+        mediaType: 'audio/wav',
         bytes: bytes.length
       });
     }
 
     res.statusCode = 200;
-    res.setHeader('Content-Type', result.audio.mediaType || 'audio/mpeg');
+    res.setHeader('Content-Type', 'audio/wav');
     res.setHeader('Content-Length', String(bytes.length));
     res.setHeader('Cache-Control', 'private, max-age=86400');
-    res.setHeader('X-Mia-Voice-Engine', MODEL);
+    res.setHeader('X-Mia-Voice-Engine', 'sproochmaschinn');
+    res.setHeader('X-Mia-Voice', VOICE_MODEL);
     res.end(bytes);
   } catch (error) {
-    console.error('Natural Mia voice failed', error);
+    console.error('Sproochmaschinn Mia voice failed', error);
     return sendJson(res, 503, { error: 'NATURAL_VOICE_UNAVAILABLE' });
   }
 }
