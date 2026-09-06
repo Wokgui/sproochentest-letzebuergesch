@@ -17,9 +17,5 @@
     "planner:test": "node scripts/planner-test.mjs",
     "journey:test": "node scripts/journey-test.mjs",
     "remediation:test": "node scripts/remediation-test.mjs"
-  },
-  "dependencies": {
-    "ai": "7.0.93",
-    "@ai-sdk/gateway": "4.0.75"
   }
 }
