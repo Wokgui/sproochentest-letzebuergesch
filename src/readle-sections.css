@@ -1,0 +1,25 @@
+.readle-sprooch-section{margin:24px 0 4px;}
+.readle-sprooch-section>.readle-section-head{margin-bottom:12px;}
+.readle-sprooch-practice{margin-top:4px;}
+.readle-sprooch-practice .quick-oral-entry{margin:0 0 10px!important;}
+.readle-sprooch-practice .mia-entry{margin:10px 0!important;}
+.readle-sprooch-practice .sprooch-grid{margin-top:10px!important;}
+.readle-sprooch-themes{padding-top:2px;}
+.readle-sprooch-exam{
+  margin-top:30px;
+  padding:17px;
+  border:1px solid var(--readle-line);
+  border-radius:22px;
+  background:#f4f8f6;
+}
+.readle-sprooch-exam>.readle-section-head{margin-left:0;margin-right:0;}
+.readle-sprooch-exam .readiness-card,
+.readle-sprooch-exam .exam-path-card,
+.readle-sprooch-exam .exam-prep-mini,
+.readle-sprooch-exam .strict-exam-entry{margin:0 0 9px!important;background:#fff!important;}
+.readle-sprooch-exam .exam-summary{margin-top:10px!important;}
+
+@media (min-width:650px){
+  .readle-sprooch-practice .sprooch-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .readle-sprooch-exam{padding:20px;}
+}
