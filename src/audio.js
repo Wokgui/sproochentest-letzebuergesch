@@ -4,6 +4,8 @@ const REMOTE_MODULE = 'https://accessibility-luxembourg.github.io/rhvoice-emscri
 let moduleInstance = null;
 let loading = null;
 let lastError = null;
+let naturalAudio = null;
+let naturalAudioUrl = null;
 
 async function importRHVoice() {
   // Prefer a locally mirrored copy when present (fully offline build),
@@ -69,8 +71,62 @@ async function nativeSpeak(text, rate) {
   return { engine: 'native', voice: voice.name };
 }
 
+function clearNaturalAudio() {
+  try { naturalAudio?.pause?.(); } catch {}
+  naturalAudio = null;
+  if (naturalAudioUrl) {
+    try { URL.revokeObjectURL(naturalAudioUrl); } catch {}
+    naturalAudioUrl = null;
+  }
+}
+
+async function naturalCoachSpeak(text) {
+  clearNaturalAudio();
+  const response = await fetch('/api/natural-voice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  if (!response.ok) throw new Error(`NATURAL_TTS_${response.status}`);
+  const blob = await response.blob();
+  if (!blob.size) throw new Error('NATURAL_TTS_EMPTY');
+  naturalAudioUrl = URL.createObjectURL(blob);
+  const audio = new Audio(naturalAudioUrl);
+  naturalAudio = audio;
+  audio.preload = 'auto';
+  await new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = ok => {
+      if (settled) return;
+      settled = true;
+      const wasCurrent = naturalAudio === audio;
+      if (wasCurrent) clearNaturalAudio();
+      if (ok) resolve();
+      else reject(new Error('NATURAL_TTS_PLAYBACK_FAILED'));
+    };
+    audio.onended = () => finish(true);
+    audio.onerror = () => finish(false);
+    const started = audio.play();
+    if (started?.catch) started.catch(() => finish(false));
+  });
+  return { engine: 'natural-ai', voice: 'mia-natural' };
+}
+
 export async function speakLuxembourgish(text, { voice = 'mia', rate = 1 } = {}) {
   const safeRate = rate === 0.8 ? 0.8 : 1;
+
+  // Mia's conversation screen gets the high-quality network voice. Other reading
+  // exercises continue to use RHVoice, preserving offline use and the free quota.
+  if (document.querySelector('.mia-overlay')) {
+    try {
+      return await naturalCoachSpeak(text);
+    } catch (error) {
+      lastError = error;
+      // Seamless fallback below: the conversation must still work if the
+      // remote voice is temporarily unavailable.
+    }
+  }
+
   try {
     const mod = await loadRHVoice(voice);
     mod.unlock?.();
@@ -95,12 +151,15 @@ export function audioStatus() {
   return {
     ready: Boolean(moduleInstance),
     loading: Boolean(loading && !moduleInstance),
+    naturalPlaying: Boolean(naturalAudio && !naturalAudio.paused),
     error: lastError ? String(lastError.message || lastError) : null
   };
 }
 
-
 export function pauseLuxembourgish() {
+  if (naturalAudio && !naturalAudio.paused) {
+    try { naturalAudio.pause(); return true; } catch {}
+  }
   try {
     moduleInstance?.pause?.();
     return true;
@@ -111,6 +170,9 @@ export function pauseLuxembourgish() {
 }
 
 export function resumeLuxembourgish() {
+  if (naturalAudio?.paused) {
+    try { naturalAudio.play(); return true; } catch {}
+  }
   try {
     moduleInstance?.resume?.();
     return true;
